@@ -1,0 +1,16 @@
+CREATE DATABASE sina_spider;
+USE sina_spider;
+
+CREATE TABLE user_img (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    uid VARCHAR(16),
+    img_src VARCHAR(255)
+) CHARSET=UTF8;
+
+CREATE TABLE user (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    uid VARCHAR(16),
+    sex VARCHAR(8),
+    uname VARCHAR(255),
+    fans VARCHAR(16)
+) CHARSET=UTF8;
