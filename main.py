@@ -19,7 +19,7 @@ HEADERS_FOR_GET_INFO = {
     'Accept-Language':'zh-CN,zh;q=0.8',
     'Cache-Control':'max-age=0',
     'Connection':'keep-alive',
-    'Cookie':'_T_WM=353f92d15219ad271f0706ec5441d2a6; ALF=1471416585; SCF=AsZPw5rkbPDnnKWKR1i3EMxVD2eXvWt_SHHKeyYZnOVHE-B96mB4FLZYbaWwYpwsrGr6U_6vxKDy6OPDvvneqkw.; SUB=_2A256iPOyDeTxGeNK71UZ8CfLyj6IHXVWcp36rDV6PUJbktBeLRCjkW2fTiNq47Ohrg3VNMNivNZd9Erlbw..; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWlXurN77AppfK3I6VNbye25JpX5o2p5NHD95QfShBN1h54S02EWs4Dqcjdi--fi-zRi-82i--fiKnNiKyhi--fi-z7i-2c; SUHB=08JLK0nzY-Ap65; SSOLoginState=1468826594; gsid_CTandWM=4ur5CpOz5RpQ6Noj0exA9mRdTbu',
+    'Cookie':'',
     'Host':'m.weibo.cn',
     'Upgrade-Insecure-Requests':'1',
     'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36'
@@ -55,7 +55,7 @@ def getImageLinks(uid, page, headers=HEADERS_FOR_GET_INFO):
             imgLinks = []
 
             content = ''
-            url = "http://m.weibo.cn/page/json?containerid=103003index%d_-_photo_all_l&page=%d&retcode=6102" % (uid, page)
+            url = "http://m.weibo.cn/page/json?containerid=103003index%d_-_photo_all_l&page=%d" % (uid, page)
             reponse = requests.get(url, headers=headers)
             reponse.close()
 
@@ -75,9 +75,35 @@ def getImageLinks(uid, page, headers=HEADERS_FOR_GET_INFO):
             continue
 
 
+# Get User Fans Total, Return Int
+def getUserFans(uid, headers=HEADERS_FOR_GET_INFO):
+    uid = int(uid)
+    while True:
+        try:
+            url = "http://m.weibo.cn/page/card?itemid=100505%d_-_WEIBO_INDEX_PROFILE_APPS&callback=_1467532491343_4&retcode=6102" % uid
+            reponse = requests.get(url, headers=headers)
+            reponse.close()
+
+            content = reponse.content.replace('\\', '')
+            data = json.loads(content[17:-1])
+            fans = data['apps'][3]['count'].split('u')
+
+            if len(fans) > 1:
+                if fans[1] == '4ebf':
+                    totalFans = fans[0] + '00000000'
+                    return int(totalFans)
+                elif fans[1] == '4e07':
+                    totalFans = fans[0] + '0000'
+                    return int(totalFans)
+            else:
+                return int(fans[0])
+        except:
+            continue
+
+
 app = Flask(__name__)
 
-dbConn = mysql.connect('localhost', 'root', 'hackingme?233333+1s', 'sina_spider')
+dbConn = mysql.connect('localhost', 'root', '', 'sina_spider')
 cursor = dbConn.cursor()
 cursor.execute("SET NAMES UTF8")
 cursor.execute('SELECT * FROM user')
@@ -91,10 +117,14 @@ def index():
     uid = request.args.get('uid')
     page = int(request.args.get('page'))
     data = getUserInformation(uid)
+    fans = getUserFans(uid)
+    data['粉丝'] = fans
     imgLinks1 = getImageLinks(uid, page)
     imgLinks2 = getImageLinks(uid, page + 1)
     imgLinks3 = getImageLinks(uid, page + 2)
-    imgLinks = imgLinks1 + imgLinks2 + imgLinks3
+    imgLinks4 = getImageLinks(uid, page + 3)
+    imgLinks5 = getImageLinks(uid, page + 4)
+    imgLinks = imgLinks1 + imgLinks2 + imgLinks3 + imgLinks4 + imgLinks5
     return render_template('show.html', imgLinks=imgLinks, data=data)
 
 @app.route('/login', methods=['GET', 'POST'])

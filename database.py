@@ -13,8 +13,8 @@ class database():
         self.eff_count = self.cursor.execute("SELECT * FROM %s", ls)
         return self.cursor.fetchall()
 
-    def insert(self, query):
-        pass
+    def insert(self, data):
+        query = "INSERT INTO %s "
 
     def update(self, query):
         pass

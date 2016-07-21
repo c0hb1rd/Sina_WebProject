@@ -7,17 +7,18 @@
             text-align: center;
         }
 
-        section {
+        .info {
             border: 3px solid black;
             text-align: center;
         }
     </style>
 </head>
 <body>
-
+        <section style="border-bottom: 3px solid black"></section>
     {% for k,v in data.iteritems() %}
         <section class="info"><pre>{{ k }} : {{ v }}</pre></section>
     {% endfor %}
+        <section style="border-top: 3px solid black"></section>
         <br />
     {% for imglink in imgLinks %}
         <img class="info" src="{{ imglink }}" />
